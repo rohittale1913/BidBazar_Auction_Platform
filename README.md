@@ -90,6 +90,7 @@ fetch()->browswer API to call backend
 BASE_URL->single source of truth
 async/await->handle api response
 json.stringify()->send json body
+json.parse(data)-> to parse a string data into a js object
 
 📌 HTTP vs HTTPS
 Environment	Protocol
@@ -159,3 +160,18 @@ Fetch updated data → setState → re-render
 React rule:
 
 UI updates only when state changes
+
+
+node.js-> it gives javascript opportunity to run outside browser that why's it is called javascript runtime environment.
+it is used for server side programming
+it is not library,frameowork or language.
+
+runtime environment means ability to run outside browser previously we are able to use javascript in frontend part only using browser b/c browser have interpretors for understanding javascript, but now using node.js we can build backend(web server) previously we need to rely on python or other languages.
+
+node.js is based on javascript 
+& it is javascript runtime env -> ability to run outside browser.
+
+# vs code is also build on node.js
+
+express-> a node.js web application framework that helps us to make web applications.
+it is a package inside npm

@@ -1,4 +1,9 @@
 {
+  "scripts": {
+    "dev": "cd vite-project && npm run dev",
+    "build": "cd vite-project && npm run build",
+    "preview": "cd vite-project && npm run preview"
+  },
   "dependencies": {
     "npm": "^10.9.4",
     "react-router-dom": "^7.11.0"

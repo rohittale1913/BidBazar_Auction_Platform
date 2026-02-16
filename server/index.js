@@ -1,26 +1,32 @@
 require('dotenv').config();
 
-const express=require("express"); //require()-> built in function to inculde external modules that exists in separate files
-const mongoose=require("mongoose");
-const cors=require("cors");
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
 
-const auctionRoutes=require("./routes/auctionRoutes");
-const bidRoutes=require("./routes/bidRoutes");
+const authRoutes = require("./routes/authRoutes");
+const auctionRoutes = require("./routes/auctionRoutes");
+const bidRoutes = require("./routes/bidRoutes");
+const userRoutes = require("./routes/userRoutes");
 
-const app=express();
+const app = express();
 
 app.use(cors());
 app.use(express.json());
 
 mongoose.connect(process.env.MONGO_URI)
-.then(()=>console.log("DB Connected"))
-.catch(err=>console.log(err));
+  .then(async () => {
+    console.log("DB Connected");
+  })
+  .catch(err => console.log(err));
 
-//registering using middleware
-app.use("/api/auctions",auctionRoutes); //any request starting with /api/auctions is forwarded to auctionRoutes.js
-app.use("/api/bids",bidRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/auctions", auctionRoutes);
+app.use("/api/bids", bidRoutes);
+app.use("/api/users", userRoutes);
 
-app.listen(5000,()=>{
-    console.log("Server running on port 5000👍");
-})
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT} 👍`);
+});
 

@@ -1,26 +1,34 @@
-import { useState,useEffect } from 'react'
-import {getAllAuctions} from "./services/api";
+import { Routes, Route } from "react-router-dom";
+import Navbar from "./components/Navbar";
+import ProtectedRoute from "./components/ProtectedRoute";
 import AuctionList from "./pages/AuctionList";
 import AuctionDetail from "./pages/AuctionDetail";
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import CreateAuction from "./pages/CreateAuction";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import MyBids from "./pages/MyBids";
+import Leaderboard from "./pages/Leaderboard";
 
 function App() {
-  // useEffect(()=>{
-  //   getAllAuctions().then(data=>console.log(data));
-  // })
+  return (
+    <>
+      <Navbar />
+      <main className="main-content">
+        <Routes>
+          {/* Public routes */}
+          <Route path="/" element={<AuctionList />} />
+          <Route path="/auction/:id" element={<AuctionDetail />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
 
-  return(
-    // <div>
-    //   <h1>Smart Auction Platform</h1>
-    //   <AuctionList/>
-    // </div>
-    // <div>
-    <Routes>
-      <Route path="/" element={<AuctionList/>}/>
-      <Route path="/auction/:id" element={<AuctionDetail/>}/>
-    </Routes>
-    
-  )
+          {/* Protected routes */}
+          <Route path="/create" element={<ProtectedRoute><CreateAuction /></ProtectedRoute>} />
+          <Route path="/my-bids" element={<ProtectedRoute><MyBids /></ProtectedRoute>} />
+        </Routes>
+      </main>
+    </>
+  );
 }
 
 export default App;

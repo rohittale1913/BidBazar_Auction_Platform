@@ -1,11 +1,19 @@
-const express=require("express");
-const {createAuction,getActiveAuctions,getAuctionById,closeAuction}=require("../controllers/auctionController");
+const express = require("express");
+const { createAuction, getAllAuctions, getActiveAuctions, getAuctionById, closeAuction, getMyAuctions } = require("../controllers/auctionController");
+const auth = require("../middleware/auth");
 
-const router=express.Router();
+const router = express.Router();
 
-router.post("/",createAuction); //routes map http method+url to controller functions. routes contain no logic only mapping.
-router.get("/",getActiveAuctions);
-router.get("/:id",getAuctionById);
-router.post("/:id/close",closeAuction);
+// Protected routes (specific paths before parameterized)
+router.get("/user/my-auctions", auth, getMyAuctions);
+router.post("/", auth, createAuction);
 
-module.exports=router;
+// Public routes
+router.get("/", getAllAuctions);
+router.get("/active", getActiveAuctions);
+router.get("/:id", getAuctionById);
+
+// Protected parameterized routes
+router.post("/:id/close", auth, closeAuction);
+
+module.exports = router;

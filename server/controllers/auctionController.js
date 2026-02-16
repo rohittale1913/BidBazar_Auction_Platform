@@ -1,87 +1,131 @@
-const Auction=require("../models/Auction");
+const Auction = require("../models/Auction");
 
-const createAuction=async(req,res)=>{
-    try{
-        const{title,description,basePrice,startTime,endTime}=req.body; //extracts data sent from client
-
-        const auction=new Auction({ //created a mongodb document in memory
-            title,
-            description,
-            basePrice,
-            currentHighestBid:basePrice,
-            startTime,endTime,
-            status:"ACTIVE",
-        });
-
-        const savedAuction=await auction.save(); //saves auction into database
-
-        res.status(201).json(savedAuction); //sends created auction back to client. (201)->created successfully
-    }
-    catch(error){
-        res.status(500).json({message:"Error creating auction"});
-    }
+// Auto-close expired auctions helper
+const autoCloseExpired = async (auction) => {
+  if (auction && auction.status === "ACTIVE" && new Date() > new Date(auction.endTime)) {
+    auction.status = "CLOSED";
+    await auction.save();
+  }
+  return auction;
 };
 
-const getActiveAuctions=async(req,res)=>{
-    try{
-        const auctions=await Auction.find({status:"ACTIVE"});
-        res.status(200).json(auctions);
-    }
-    catch(error){
-        res.status(500).json({message:"Error fetching auctions"});
-    }
+const createAuction = async (req, res) => {
+  try {
+    const { title, description, basePrice, endTime } = req.body;
+
+    const auction = new Auction({
+      title,
+      description,
+      basePrice,
+      currentHighestBid: basePrice,
+      startTime: new Date(),
+      endTime,
+      status: "ACTIVE",
+      createdBy: req.user._id,
+    });
+
+    const savedAuction = await auction.save();
+    res.status(201).json(savedAuction);
+  } catch (error) {
+    res.status(500).json({ message: "Error creating auction" });
+  }
 };
 
-const getAuctionById=async(req,res)=>{
-    try{
-        const {id}=req.params;
-
-        const auction=await Auction.findById(id);
-
-        if(!auction){
-            return res.status(404).json({message:"Auction not found"}); //404->client gave wrongId
-        }
-
-        res.status(200).json(auction);
-    }
-    catch(error){
-        res.status(500).json({message:"Error fetching auction"}); //500->server failed
-    }
+const getAllAuctions = async (req, res) => {
+  try {
+    await Auction.updateMany(
+      { status: "ACTIVE", endTime: { $lt: new Date() } },
+      { $set: { status: "CLOSED" } }
+    );
+    const auctions = await Auction.find()
+      .populate("createdBy", "name email")
+      .populate("currentHighestBidder", "name email")
+      .sort({ createdAt: -1 });
+    res.status(200).json(auctions);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching auctions" });
+  }
 };
 
-const closeAuction=async(req,res)=>{
-    try{
-        const{id}=req.params;
-        
-        //close auction
-        const auction=await Auction.findById(id);
-
-        //auto close auction
-        if(new Date()>auction.endTime){
-            auction.status="CLOSED";
-        }
-
-        if(!auction){
-            return res.status(404).error({message:"Auction not found"});
-        }
-
-        if(auction.status==="CLOSED"){
-            return res.status(400).json({message:"Auction already closed"});
-        }
-
-        auction.status="CLOSED";
-        await auction.save();
-        
-        //declare winner
-        res.status(200).json({
-            message:"Auction closed",
-            winningBid:auction.currentHighestBid,
-            winner:auction.currentHighestBid,
-        });
-    }
-    catch(error){
-        res.status(500).json({message:"Error closing action"});
-    }
+const getActiveAuctions = async (req, res) => {
+  try {
+    await Auction.updateMany(
+      { status: "ACTIVE", endTime: { $lt: new Date() } },
+      { $set: { status: "CLOSED" } }
+    );
+    const auctions = await Auction.find({ status: "ACTIVE" })
+      .populate("createdBy", "name email")
+      .populate("currentHighestBidder", "name email")
+      .sort({ createdAt: -1 });
+    res.status(200).json(auctions);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching auctions" });
+  }
 };
 
-module.exports={createAuction,getActiveAuctions,getAuctionById,closeAuction};
+const getAuctionById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    let auction = await Auction.findById(id)
+      .populate("createdBy", "name email")
+      .populate("currentHighestBidder", "name email");
+
+    if (!auction) {
+      return res.status(404).json({ message: "Auction not found" });
+    }
+
+    auction = await autoCloseExpired(auction);
+    res.status(200).json(auction);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching auction" });
+  }
+};
+
+const closeAuction = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const auction = await Auction.findById(id);
+
+    if (!auction) {
+      return res.status(404).json({ message: "Auction not found" });
+    }
+
+    // Only the creator can close an auction
+    if (auction.createdBy.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "Only the auction creator can close it" });
+    }
+
+    if (auction.status === "CLOSED") {
+      return res.status(400).json({ message: "Auction already closed" });
+    }
+
+    auction.status = "CLOSED";
+    await auction.save();
+
+    res.status(200).json({
+      message: "Auction closed",
+      winningBid: auction.currentHighestBid,
+      winner: auction.currentHighestBidder,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error closing auction" });
+  }
+};
+
+// Get auctions created by the logged-in user
+const getMyAuctions = async (req, res) => {
+  try {
+    await Auction.updateMany(
+      { status: "ACTIVE", endTime: { $lt: new Date() } },
+      { $set: { status: "CLOSED" } }
+    );
+    const auctions = await Auction.find({ createdBy: req.user._id })
+      .populate("currentHighestBidder", "name email")
+      .sort({ createdAt: -1 });
+    res.status(200).json(auctions);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching your auctions" });
+  }
+};
+
+module.exports = { createAuction, getAllAuctions, getActiveAuctions, getAuctionById, closeAuction, getMyAuctions };

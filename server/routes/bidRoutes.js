@@ -1,9 +1,15 @@
-const express=require("express");
-const {placeBid,getBidsForAuction}=require("../controllers/bidController");
+const express = require("express");
+const { placeBid, getBidsForAuction, getMyBids, getLeaderboard } = require("../controllers/bidController");
+const auth = require("../middleware/auth");
 
-const router=express.Router();
+const router = express.Router();
 
-router.post("/",placeBid);
-router.get("/:auctionId",getBidsForAuction);
+// Protected routes (specific paths before parameterized)
+router.get("/user/my-bids", auth, getMyBids);
+router.post("/", auth, placeBid);
 
-module.exports=router;
+// Public routes
+router.get("/leaderboard", getLeaderboard);
+router.get("/:auctionId", getBidsForAuction);
+
+module.exports = router;
