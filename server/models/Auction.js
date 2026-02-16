@@ -7,7 +7,7 @@ const AuctionSchema = new mongoose.Schema(
     basePrice: { type: Number, required: true },
     currentHighestBid: { type: Number, default: 0 },
     currentHighestBidder: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId, 
       ref: "User",
       default: null,
     },
