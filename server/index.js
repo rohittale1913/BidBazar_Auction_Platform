@@ -1,4 +1,5 @@
-require('dotenv').config();
+require('dotenv').config(); //loads variables from .env file into process.env
+// this keeps sensitive data out of code.
 
 const express = require("express");
 const mongoose = require("mongoose");
@@ -11,8 +12,9 @@ const userRoutes = require("./routes/userRoutes");
 
 const app = express();
 
-app.use(cors());
-app.use(express.json());
+//app.use()->registers middleware
+app.use(cors()); //allow cross origin requests(frontend->backend)
+app.use(express.json()); //parses incoming JSON request bodies.
 
 mongoose.connect(process.env.MONGO_URI)
   .then(async () => {
@@ -20,6 +22,7 @@ mongoose.connect(process.env.MONGO_URI)
   })
   .catch(err => console.log(err));
 
+  //Route mounting
 app.use("/api/auth", authRoutes);
 app.use("/api/auctions", auctionRoutes);
 app.use("/api/bids", bidRoutes);
