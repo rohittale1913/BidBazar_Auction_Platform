@@ -9,6 +9,7 @@ const autoCloseExpired = async (auction) => {
   return auction;
 };
 
+//Creation of Auction 
 const createAuction = async (req, res) => {
   try {
     const { title, description, basePrice, endTime } = req.body;
@@ -31,6 +32,8 @@ const createAuction = async (req, res) => {
   }
 };
 
+// All auction route
+
 const getAllAuctions = async (req, res) => {
   try {
     await Auction.updateMany(
@@ -47,6 +50,8 @@ const getAllAuctions = async (req, res) => {
   }
 };
 
+// All active auction route
+
 const getActiveAuctions = async (req, res) => {
   try {
     await Auction.updateMany(
@@ -62,6 +67,8 @@ const getActiveAuctions = async (req, res) => {
     res.status(500).json({ message: "Error fetching auctions" });
   }
 };
+
+//Get the Auction by particular id 
 
 const getAuctionById = async (req, res) => {
   try {
@@ -80,6 +87,8 @@ const getAuctionById = async (req, res) => {
     res.status(500).json({ message: "Error fetching auction" });
   }
 };
+
+// Auction closed route 
 
 const closeAuction = async (req, res) => {
   try {
