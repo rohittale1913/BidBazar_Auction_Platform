@@ -1,6 +1,8 @@
 const User = require("../models/User");
 const { generateToken } = require("../config/jwt");
 
+// Signup method
+
 const signup = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -37,6 +39,9 @@ const signup = async (req, res) => {
     res.status(500).json({ message: "Error creating account" });
   }
 };
+
+
+// Login method
 
 const login = async (req, res) => {
   try {
