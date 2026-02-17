@@ -28,8 +28,12 @@ app.use("/api/auctions", auctionRoutes);
 app.use("/api/bids", bidRoutes);
 app.use("/api/users", userRoutes);
 
+// port 5000
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT} 👍`);
 });
+
+
 
